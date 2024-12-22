@@ -1,0 +1,28 @@
+{
+  "name": "cdr-intelligence",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prisma:primary:validate": "prisma validate --schema=prisma/primary/schema.prisma",
+    "prisma:primary:generate": "prisma generate --schema=prisma/primary/schema.prisma",
+    "prisma:primary:migrate": "prisma migrate dev --schema=prisma/primary/schema.prisma",
+    "prisma:primary:studio": "prisma studio --schema=prisma/primary/schema.prisma",
+    "prisma:primary:db-push": "prisma db push --schema=prisma/primary/schema.prisma",
+    "prisma:primary:db-pull": "prisma db pull --schema=prisma/primary/schema.prisma",
+    "prisma:primary:reset": "prisma migrate reset --schema=prisma/primary/schema.prisma"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "22.10.2",
+    "prisma": "6.1.0",
+    "tsx": "4.19.2",
+    "typescript": "5.7.2"
+  },
+  "dependencies": {
+    "@prisma/client": "6.1.0"
+  }
+}

@@ -1,0 +1,29 @@
+// Enum to represent various permission abilities in the system.
+// This ensures a consistent and predefined set of permission types
+// that can be assigned to roles or entities in a role-based access control (RBAC) system.
+enum PermissionAbility {
+    // Grants the ability to read/view resources.
+    // Example: Reading data from a database or viewing a file.
+    READ
+
+    // Grants the ability to update/modify existing resources.
+    UPDATE
+
+    // Grants the ability to delete/remove resources.
+    DELETE
+
+    // Grants the ability to create new entities/resources.
+    CREATE
+
+    // Grants the ability to execute an action or process.
+    EXECUTE
+}
+
+model Permission {
+    id                    String                  @id @db.Uuid
+    name                  String                  @unique
+    description           String?
+    createdAt             DateTime                @default(now())
+    updatedAt             DateTime                @updatedAt
+    ProjectRolePermission ProjectRolePermission[]
+}

@@ -1,0 +1,12 @@
+model Account {
+    id             String           @id @db.Uuid
+    username       String           @unique
+    password       String           @db.VarChar(256)
+    createdAt      DateTime         @db.Timestamptz()
+    updatedAt      DateTime         @db.Timestamptz()
+    createdBy      String
+    updatedBy      String?
+    ProjectAccount ProjectAccount[]
+
+    @@map("accounts")
+}

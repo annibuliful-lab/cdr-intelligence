@@ -1,0 +1,19 @@
+model CallDetailRecord {
+    id                String   @id @db.Uuid
+    sourceMsisdn      String // Source phone number (MSISDN)
+    sourceImsi        String?
+    sourceImei        String?
+    destinationMsisdn String // Destination phone number (MSISDN)
+    destinationImsi   String?
+    destinationImei   String?
+    callDuration      Int // Call duration in minutes
+    locationLat       Float // Latitude of the call's location
+    locationLng       Float // Longitude of the call's location
+    address           String // Address associated with the location
+    callStartTime     DateTime // Timestamp of when the call started
+    callEndTime       DateTime // Timestamp of when the call ended
+    createdAt         DateTime @default(now()) // Record creation time
+    updatedAt         DateTime @updatedAt // Record update time
+
+    @@map("call_detail_records")
+}

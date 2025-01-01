@@ -5,13 +5,14 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prisma:primary:validate": "prisma validate --schema=prisma/primary",
-    "prisma:primary:generate": "prisma generate --schema=prisma/primary",
-    "prisma:primary:migrate": "prisma migrate dev --schema=prisma/primary",
-    "prisma:primary:studio": "prisma studio --schema=prisma/primary",
-    "prisma:primary:db-push": "prisma db push --schema=prisma/primary",
-    "prisma:primary:db-pull": "prisma db pull --schema=prisma/primary",
-    "prisma:primary:reset": "prisma migrate reset --schema=prisma/primary"
+    "prisma:validate": "prisma validate",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio",
+    "prisma:db-push": "prisma db push",
+    "prisma:db-pull": "prisma db pull",
+    "prisma:reset": "prisma migrate reset",
+    "prisma:format": "prisma migrate format"
   },
   "keywords": [],
   "author": "",

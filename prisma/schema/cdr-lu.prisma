@@ -1,0 +1,60 @@
+model TelecommunicationServiceProvider {
+    id                String                                                      @id @db.Uuid
+    name              String                                                      @db.VarChar(128)
+    description       String                                                      @db.Text
+    createdBy         String
+    updatedBy         String?
+    createdAt         DateTime                                                    @default(now())
+    updatedAt         DateTime?
+    callDetailRecords CallDetailRecord[]
+    configurations    TelecommunicationServiceProviderBatchingDataConfiguration[]
+
+    @@map("telecommunication_service_provider")
+}
+
+model TelecommunicationServiceProviderBatchingDataConfiguration {
+    id                             String                           @id @db.Uuid
+    name                           String
+    isDefault                      Boolean                          @default(true)
+    serviceProviderId              String                           @db.Uuid
+    serviceProvider                TelecommunicationServiceProvider @relation(fields: [serviceProviderId], references: [id])
+    createdBy                      String
+    updatedBy                      String?
+    createdAt                      DateTime                         @default(now())
+    updatedAt                      DateTime?
+    BatchingDataFieldConfiguration BatchingDataFieldConfiguration[]
+
+    @@map("telecommunication_service_provider_batching_data_configuration")
+}
+
+model BatchingDataFieldConfiguration {
+    id              String                                                    @id @db.Uuid
+    configuration   TelecommunicationServiceProviderBatchingDataConfiguration @relation(fields: [configurationId], references: [id])
+    configurationId String                                                    @db.Uuid
+    sourceType      String
+    sourceField     String
+    targetType      String
+    targetField     String
+}
+
+model CallDetailRecord {
+    id                   String                           @id @db.Uuid
+    serviceProvider      TelecommunicationServiceProvider @relation(fields: [serviceProviderId], references: [id])
+    serviceProviderId    String                           @db.Uuid
+    sourceMsisdn         String
+    sourceImsi           String?
+    sourceImei           String?
+    destinationMsisdn    String
+    destinationImsi      String?
+    destinationImei      String?
+    callDurationInMinute Int
+    locationLatitude     Float
+    locationLongitude    Float
+    address              String
+    callStartTime        DateTime?
+    callEndTime          DateTime?
+    createdAt            DateTime                         @default(now())
+    updatedAt            DateTime?
+
+    @@map("call_detail_records")
+}

@@ -1,0 +1,28 @@
+model SubDistrict {
+    id                 String   @id @default(uuid()) @db.Uuid
+    subDistrictId      String
+    subDistrictName    String
+    districtId         String
+    zipCode            String
+    district           District @relation(fields: [districtId], references: [districtId])
+    province           Province @relation(fields: [provinceProvinceId], references: [provinceId])
+    provinceProvinceId String
+
+    @@map("sub_district")
+}
+
+model District {
+    districtId   String        @id
+    districtName String
+    subDistricts SubDistrict[]
+
+    @@map("district")
+}
+
+model Province {
+    provinceId   String        @id
+    provinceName String
+    subDistricts SubDistrict[]
+
+    @@map("province")
+}

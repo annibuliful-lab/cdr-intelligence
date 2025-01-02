@@ -18,7 +18,7 @@ func NewRedisClient() (*redis.Client, error) {
 	var err error
 	redisOnce.Do(func() {
 		redisClient = redis.NewClient(&redis.Options{
-			Addr:     config.GetEnv("REDIS_ADDR", "localhost:6379"),
+			Addr:     config.GetEnv("REDIS_HOST", "localhost:6379"),
 			Password: config.GetEnv("REDIS_PASSWORD", ""),
 			DB:       0,
 		})

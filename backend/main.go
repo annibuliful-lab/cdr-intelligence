@@ -1,8 +1,10 @@
 package main
 
 import (
-	"cdr-intelligence-backend/src/config"
-	uploadmiddleware "cdr-intelligence-backend/src/graphql/middleware/upload"
+	"backend/src/config"
+	"backend/src/graphql"
+	uploadmiddleware "backend/src/graphql/middleware/upload"
+	"backend/src/graphql/subscription/graphqlws"
 	"context"
 	"flag"
 	"log"
@@ -10,8 +12,8 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/graph-gophers/graphql-go"
-	"github.com/graph-gophers/graphql-go/relay"
+	gql "github.com/graph-gophers/graphql-go"
+	relay "github.com/graph-gophers/graphql-go/relay"
 	"github.com/joho/godotenv"
 	gqlMerge "github.com/mununki/gqlmerge/lib"
 	"github.com/rs/cors"
@@ -47,34 +49,28 @@ func main() {
 		// Debug:            true,
 	})
 
-	opts := []graphql.SchemaOpt{
-		graphql.UseFieldResolvers(),
-		graphql.MaxParallelism(20),
-		graphql.UseStringDescriptions(),
-		graphql.RestrictIntrospection(func(context.Context) bool {
+	opts := []gql.SchemaOpt{
+		gql.UseFieldResolvers(),
+		gql.MaxParallelism(20),
+		gql.UseStringDescriptions(),
+		gql.RestrictIntrospection(func(context.Context) bool {
 			return false
 		}),
-		graphql.Directives(),
+		gql.Directives(),
 	}
 
-	type query struct{}
-
-	// init graphQL schema
-	schema, err := graphql.ParseSchema(string(mergedSchema[:]), &query{}, opts...)
+	schema, err := gql.ParseSchema(string(mergedSchema[:]), graphql.GraphqlResolver(), opts...)
 	if err != nil {
 		panic(err)
 	}
 
 	// graphQL handler
 	graphQLHandler := corsMiddleware.Handler(
-		uploadmiddleware.Handler(&relay.Handler{Schema: schema}),
-		// graphqlws.NewHandlerFunc(
-		// 	schema,
-		// 	// auth.GraphqlContext(uploadmiddleware.Handler(&relay.Handler{Schema: schema})),
-		// 	// graphqlws.WithContextGenerator(
-		// 	// 	graphqlws.ContextGeneratorFunc(auth.WebsocketGraphqlContext),
-		// 	// ),
-		// ),
+		graphqlws.NewHandlerFunc(
+			schema,
+			// auth.GraphqlContext(uploadmiddleware.Handler(&relay.Handler{Schema: schema})),
+			uploadmiddleware.Handler(&relay.Handler{Schema: schema}),
+		),
 	)
 
 	http.Handle("/graphql", graphQLHandler)

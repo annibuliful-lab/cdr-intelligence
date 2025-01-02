@@ -1,10 +1,13 @@
-module cdr-intelligence-backend
+module backend
 
 go 1.23.4
 
 require github.com/redis/go-redis/v9 v9.7.0
 
-require github.com/gorilla/websocket v1.4.1 // indirect
+require (
+	github.com/go-jet/jet/v2 v2.12.0 // indirect
+	github.com/gorilla/websocket v1.4.1 // indirect
+)
 
 require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
@@ -18,4 +21,5 @@ require (
 	github.com/neo4j/neo4j-go-driver/v5 v5.27.0
 	github.com/rabbitmq/amqp091-go v1.10.0
 	github.com/rs/cors v1.11.1
+	github.com/vektah/gqlparser/v2 v2.5.21
 )

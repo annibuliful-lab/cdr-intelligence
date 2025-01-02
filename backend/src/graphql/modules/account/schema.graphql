@@ -1,0 +1,9 @@
+type Account {
+  id: ID!
+  username: String!
+  createdAt: Time!
+}
+
+type Query {
+  profile: Account!
+}

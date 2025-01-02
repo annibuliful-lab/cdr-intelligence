@@ -1,7 +1,7 @@
 package clients
 
 import (
-	"cdr-intelligence-backend/src/config"
+	"backend/src/config"
 	"database/sql"
 	"fmt"
 	"sync"

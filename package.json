@@ -12,7 +12,9 @@
     "prisma:db-push": "prisma db push",
     "prisma:db-pull": "prisma db pull",
     "prisma:reset": "prisma migrate reset",
-    "prisma:format": "prisma migrate format"
+    "prisma:format": "prisma migrate format",
+    "backend:db:generate": "cd tools/db-generate && go run main.go && cd ../../backend && rm -rf ./.gen/checkpoint/public/table/table_use_schema.go",
+    "backend:dev": "cd backend && go run main.go"
   },
   "keywords": [],
   "author": "",
@@ -24,6 +26,7 @@
     "typescript": "5.7.2"
   },
   "dependencies": {
+    "@genql/cli": "^6.3.3",
     "@prisma/client": "6.1.0"
   }
 }

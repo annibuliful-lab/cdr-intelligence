@@ -1,7 +1,7 @@
 package clients
 
 import (
-	"cdr-intelligence-backend/src/config"
+	"backend/src/config"
 	"sync"
 
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"

@@ -8,7 +8,11 @@ type GraphqlError struct {
 }
 
 func (e GraphqlError) Error() string {
-	return fmt.Sprintf("error [%s]: %s", e.Code, e.Message)
+	if e.Code == "" {
+		e.Code = "Error"
+	}
+
+	return fmt.Sprintf("[%s]: %s", e.Code, e.Message)
 }
 
 func (e GraphqlError) Extensions() map[string]interface{} {

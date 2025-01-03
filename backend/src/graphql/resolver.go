@@ -16,5 +16,11 @@ func GraphqlResolver(params GraphqlResolverParams) *Resolver {
 		Db:    params.Db,
 		Redis: params.Redis,
 	})
+
+	r.AuthenticationResolver = authentication.NewAuthenticationResolver(authentication.NewAuthenticationResolverParams{
+		Db:    params.Db,
+		Redis: params.Redis,
+	})
+
 	return r
 }

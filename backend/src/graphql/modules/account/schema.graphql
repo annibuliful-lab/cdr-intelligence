@@ -7,3 +7,7 @@ type Account {
 type Query {
   profile: Account!
 }
+
+type Mutation {
+  register(username: String!, password: String!): Account!
+}

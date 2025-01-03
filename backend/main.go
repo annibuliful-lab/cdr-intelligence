@@ -8,7 +8,6 @@ import (
 	"backend/src/graphql/subscription/graphqlws"
 	"context"
 	"flag"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -19,6 +18,8 @@ import (
 	gqlMerge "github.com/mununki/gqlmerge/lib"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/rs/cors"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 func mergeGql() {
@@ -32,15 +33,18 @@ func mergeGql() {
 func main() {
 	err := godotenv.Load("../.env")
 	if err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
+		log.Panic().Msg("Error loading .env" + err.Error())
 	}
+
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 
 	mergeGql()
 
 	mergedSchema, err := os.ReadFile("generated.graphql")
 
 	if err != nil {
-		log.Fatal("Error loading graphql file")
+		log.Panic().Msg("Error loading graphql file")
 	}
 
 	isDevelopment := config.GetEnv("ENV", "development") == "development"
@@ -65,22 +69,22 @@ func main() {
 
 	db, err := clients.NewPostgreSQLClient()
 	if err != nil {
-		panic(err)
+		log.Panic().Msg(err.Error())
 	}
 	redis, err := clients.NewRedisClient()
 	if err != nil {
-		panic(err)
+		log.Panic().Msg(err.Error())
 	}
 
 	rabbitmq, err := clients.NewRabbitMQClient()
 	if err != nil {
-		panic(err)
+		log.Panic().Msg(err.Error())
 	}
 	ctx := context.Background()
 	neo4jDriver, err := clients.NewNeo4jClient()
 	neo4jSession := neo4jDriver.NewSession(ctx, neo4j.SessionConfig{})
 	if err != nil {
-		panic(err)
+		log.Panic().Msg(err.Error())
 	}
 
 	schema, err := gql.ParseSchema(string(mergedSchema[:]), graphql.GraphqlResolver(graphql.GraphqlResolverParams{
@@ -91,7 +95,7 @@ func main() {
 	}), opts...)
 
 	if err != nil {
-		panic(err)
+		log.Panic().Msg(err.Error())
 	}
 
 	// graphQL handler
@@ -107,7 +111,7 @@ func main() {
 
 	var listenAddress = flag.String("listen", config.GetEnv("BACKEND_PORT", ":3000"), "Listen address.")
 
-	log.Printf("Listening at http://%s", *listenAddress)
+	log.Info().Msg("Listening at http://" + *listenAddress)
 
 	httpServer := http.Server{
 		Addr: *listenAddress,
@@ -131,7 +135,7 @@ func main() {
 	}()
 
 	if err := httpServer.ListenAndServe(); err != http.ErrServerClosed {
-		log.Fatalf("HTTP server ListenAndServe Error: %v", err)
+		log.Fatal().Msg("HTTP server ListenAndServe Error:" + err.Error())
 	}
 
 	<-idleConnectionsClosed

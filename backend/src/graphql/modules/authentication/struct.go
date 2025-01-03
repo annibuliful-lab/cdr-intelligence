@@ -16,7 +16,7 @@ type Authentication struct {
 
 type NewAuthenticationResolverParams struct {
 	Db    *sql.DB
-	redis *redis.Client
+	Redis *redis.Client
 }
 
 type LoginInput struct {

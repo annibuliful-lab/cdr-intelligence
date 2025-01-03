@@ -1,6 +1,7 @@
 package authentication
 
 import (
+	error_utils "backend/src/error"
 	"context"
 )
 
@@ -15,6 +16,16 @@ func NewAuthenticationResolver(params NewAuthenticationResolverParams) Authentic
 	}
 }
 
-func (AuthenticationResolver) Login(ctx context.Context, input LoginInput) Authentication {
-	return Authentication{}
+func (r AuthenticationResolver) Login(ctx context.Context, input LoginInput) (Authentication, error) {
+	authentication, err := r.authenticationService.Login(LoginData{
+		Username: input.Username,
+		Password: input.Password,
+	})
+	if err != nil {
+		return Authentication{}, error_utils.GraphqlError{
+			Message: err.Error(),
+		}
+	}
+
+	return authentication, nil
 }

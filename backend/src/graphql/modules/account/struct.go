@@ -17,3 +17,13 @@ type Account struct {
 	Username  string
 	CreatedAt graphql.Time
 }
+
+type RegisterInput struct {
+	Username string
+	Password string
+}
+
+type CreateAccountData struct {
+	Username string
+	Password string
+}

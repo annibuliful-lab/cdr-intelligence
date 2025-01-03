@@ -1,6 +1,8 @@
 package authentication
 
 import (
+	"github.com/samber/lo"
+
 	"database/sql"
 	"errors"
 
@@ -24,7 +26,7 @@ type AuthenticationService struct {
 func NewAuthenticationService(params NewAuthenticationResolverParams) AuthenticationService {
 	return AuthenticationService{
 		Db:    params.Db,
-		redis: params.redis,
+		redis: params.Redis,
 	}
 }
 
@@ -74,9 +76,25 @@ func (this AuthenticationService) Login(input LoginData) (Authentication, error)
 		return Authentication{}, error_utils.SignTokenFailed
 	}
 
+	projects := []model.Projects{}
+	projectsStmt := table.ProjectAccounts.
+		SELECT(table.ProjectAccounts.ProjectId).
+		FROM(table.ProjectAccounts).
+		WHERE(table.ProjectAccounts.AccountId.EQ(pg.UUID(account.ID)))
+	err = projectsStmt.Query(this.Db, &projects)
+
+	if err != nil {
+		return Authentication{}, error_utils.InternalServerError
+	}
+
+	projectIds := lo.Map(projects, func(item model.Projects, index int) graphql.ID {
+		return graphql.ID(item.ID.String())
+	})
+
 	return Authentication{
 		Token:        token,
 		RefreshToken: refreshToken,
 		AccountId:    graphql.ID(account.ID.String()),
+		ProjectIds:   &projectIds,
 	}, nil
 }

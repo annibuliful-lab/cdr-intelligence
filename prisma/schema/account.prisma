@@ -1,12 +1,22 @@
 model Account {
-    id             String           @id @db.Uuid
-    username       String           @unique
-    password       String           @db.VarChar(256)
-    createdAt      DateTime         @db.Timestamptz()
-    updatedAt      DateTime         @db.Timestamptz()
-    createdBy      String
-    updatedBy      String?
-    ProjectAccount ProjectAccount[]
+    id              String           @id @db.Uuid
+    username        String           @unique
+    password        String           @db.VarChar(256)
+    createdAt       DateTime         @db.Timestamptz()
+    updatedAt       DateTime         @db.Timestamptz()
+    createdBy       String
+    updatedBy       String?
+    projectAccounts ProjectAccount[]
+    sessionTokens   SessionToken[]
 
     @@map("accounts")
+}
+
+model SessionToken {
+    token     String    @id
+    account   Account   @relation(fields: [accountId], references: [id])
+    accountId String    @db.Uuid
+    revoke    Boolean   @default(false)
+    createdAt DateTime  @default(now()) @db.Timestamptz()
+    updatedAt DateTime?
 }

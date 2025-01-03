@@ -1,7 +1,8 @@
 model Project {
     id          String        @id @db.Uuid
     title       String
-    ProjectRole ProjectRole[]
+    description String?
+    roles       ProjectRole[]
     createdAt   DateTime      @db.Timestamptz()
     updatedAt   DateTime      @db.Timestamptz()
     createdBy   String

@@ -13,7 +13,7 @@
     "prisma:db-pull": "prisma db pull",
     "prisma:reset": "prisma migrate reset",
     "prisma:format": "prisma migrate format",
-    "backend:db:generate": "cd tools/db-generate && go run main.go && cd ../../backend && rm -rf ./.gen/checkpoint/public/table/table_use_schema.go",
+    "backend:db:generate": "cd tools/db-generate && go run main.go && cd ../../backend && rm -rf ./src/.gen/cdr-intelligence/public/table/table_use_schema.go",
     "backend:dev": "cd backend && go run main.go"
   },
   "keywords": [],

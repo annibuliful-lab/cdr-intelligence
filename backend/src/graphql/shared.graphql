@@ -3,8 +3,5 @@ scalar Upload
 
 schema {
   query: Query
-}
-
-type Query {
-  hello: String!
+  mutation: Mutation
 }

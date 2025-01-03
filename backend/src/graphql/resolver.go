@@ -1,17 +1,20 @@
 package graphql
 
-import "backend/src/graphql/modules/account"
+import (
+	"backend/src/graphql/modules/account"
+	"backend/src/graphql/modules/authentication"
+)
 
 type Resolver struct {
 	account.AccountResolver
+	authentication.AuthenticationResolver
 }
 
-func (r Resolver) Hello() string {
-	return "hello"
-}
-
-func GraphqlResolver() *Resolver {
+func GraphqlResolver(params GraphqlResolverParams) *Resolver {
 	r := &Resolver{}
-
+	r.AccountResolver = account.NewAccountResolver(account.NewAccountParams{
+		Db:    params.Db,
+		Redis: params.Redis,
+	})
 	return r
 }

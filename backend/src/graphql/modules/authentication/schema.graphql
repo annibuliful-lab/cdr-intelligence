@@ -1,0 +1,11 @@
+type Authentication {
+  accountId: ID!
+  # account: Account
+  projectIds: [ID!]
+  token: String!
+  refreshToken: String!
+}
+
+type Mutation {
+  login(username: String!, password: String!): Authentication!
+}

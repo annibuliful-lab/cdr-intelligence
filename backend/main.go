@@ -1,6 +1,7 @@
 package main
 
 import (
+	"backend/src/clients"
 	"backend/src/config"
 	"backend/src/graphql"
 	uploadmiddleware "backend/src/graphql/middleware/upload"
@@ -16,6 +17,7 @@ import (
 	relay "github.com/graph-gophers/graphql-go/relay"
 	"github.com/joho/godotenv"
 	gqlMerge "github.com/mununki/gqlmerge/lib"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/rs/cors"
 )
 
@@ -41,12 +43,14 @@ func main() {
 		log.Fatal("Error loading graphql file")
 	}
 
+	isDevelopment := config.GetEnv("ENV", "development") == "development"
+
 	corsMiddleware := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
 		AllowedMethods:   []string{"GET", "POST"},
 		AllowCredentials: true,
 		AllowedHeaders:   []string{"*"},
-		// Debug:            true,
+		Debug:            isDevelopment,
 	})
 
 	opts := []gql.SchemaOpt{
@@ -54,12 +58,38 @@ func main() {
 		gql.MaxParallelism(20),
 		gql.UseStringDescriptions(),
 		gql.RestrictIntrospection(func(context.Context) bool {
-			return false
+			return isDevelopment
 		}),
 		gql.Directives(),
 	}
 
-	schema, err := gql.ParseSchema(string(mergedSchema[:]), graphql.GraphqlResolver(), opts...)
+	db, err := clients.NewPostgreSQLClient()
+	if err != nil {
+		panic(err)
+	}
+	redis, err := clients.NewRedisClient()
+	if err != nil {
+		panic(err)
+	}
+
+	rabbitmq, err := clients.NewRabbitMQClient()
+	if err != nil {
+		panic(err)
+	}
+	ctx := context.Background()
+	neo4jDriver, err := clients.NewNeo4jClient()
+	neo4jSession := neo4jDriver.NewSession(ctx, neo4j.SessionConfig{})
+	if err != nil {
+		panic(err)
+	}
+
+	schema, err := gql.ParseSchema(string(mergedSchema[:]), graphql.GraphqlResolver(graphql.GraphqlResolverParams{
+		Db:       db,
+		Redis:    redis,
+		Rabbitmq: rabbitmq,
+		Neo4j:    &neo4jSession,
+	}), opts...)
+
 	if err != nil {
 		panic(err)
 	}
@@ -91,8 +121,11 @@ func main() {
 		if err := httpServer.Shutdown(context.Background()); err != nil {
 			log.Printf("HTTP Server Shutdown Error: %v", err)
 		}
-		// db.GetPrimaryClient().Close()
-		// db.GetRedisClient().Close()
+		db.Close()
+		redis.Close()
+		rabbitmq.Close()
+		neo4jSession.Close(ctx)
+		neo4jDriver.Close(ctx)
 
 		close(idleConnectionsClosed)
 	}()

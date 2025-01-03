@@ -2,7 +2,6 @@ package clients
 
 import (
 	"backend/src/config"
-	"context"
 	"sync"
 
 	"github.com/redis/go-redis/v9"
@@ -22,14 +21,11 @@ func NewRedisClient() (*redis.Client, error) {
 			Password: config.GetEnv("REDIS_PASSWORD", ""),
 			DB:       0,
 		})
-
-		// Test connection
-		ctx := context.Background()
-		_, err = redisClient.Ping(ctx).Result()
 	})
 
 	if err != nil {
 		return nil, err
 	}
+
 	return redisClient, nil
 }

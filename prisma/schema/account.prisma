@@ -13,10 +13,11 @@ model Account {
 }
 
 model SessionToken {
-    token     String    @id
-    account   Account   @relation(fields: [accountId], references: [id])
-    accountId String    @db.Uuid
-    revoke    Boolean   @default(false)
-    createdAt DateTime  @default(now()) @db.Timestamptz()
-    updatedAt DateTime?
+    token          String    @id
+    account        Account   @relation(fields: [accountId], references: [id])
+    accountId      String    @db.Uuid
+    revoke         Boolean   @default(false)
+    isRefreshToken Boolean   @default(false)
+    createdAt      DateTime  @default(now()) @db.Timestamptz()
+    updatedAt      DateTime?
 }

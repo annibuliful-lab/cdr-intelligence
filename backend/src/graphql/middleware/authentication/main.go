@@ -23,6 +23,11 @@ func GetAuthorizationHeaders(header http.Header) (AuthorizationContext, error) {
 	}
 
 	authContext.Token = GetAuthToken(authorization)
+
+	if authContext.Token == "" {
+		return authContext, nil
+	}
+
 	payload, err := jwt.VerifyToken(authContext.Token)
 
 	if err != nil {

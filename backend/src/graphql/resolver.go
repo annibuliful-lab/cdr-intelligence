@@ -1,11 +1,13 @@
 package graphql
 
 import (
+	graphql_enum "backend/src/graphql/enum"
 	"backend/src/graphql/modules/account"
 	"backend/src/graphql/modules/authentication"
 )
 
 type Resolver struct {
+	PermissionAbility graphql_enum.PermissionAbility
 	account.AccountResolver
 	authentication.AuthenticationResolver
 }

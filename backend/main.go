@@ -4,6 +4,7 @@ import (
 	"backend/src/clients"
 	"backend/src/config"
 	"backend/src/graphql"
+	graphql_directives "backend/src/graphql/directives"
 	uploadmiddleware "backend/src/graphql/middleware/upload"
 	"backend/src/graphql/subscription/graphqlws"
 	"context"
@@ -54,7 +55,7 @@ func main() {
 		AllowedMethods:   []string{"GET", "POST"},
 		AllowCredentials: true,
 		AllowedHeaders:   []string{"*"},
-		Debug:            isDevelopment,
+		// Debug:            isDevelopment,
 	})
 
 	opts := []gql.SchemaOpt{
@@ -64,7 +65,7 @@ func main() {
 		gql.RestrictIntrospection(func(context.Context) bool {
 			return isDevelopment
 		}),
-		gql.Directives(),
+		gql.Directives(&graphql_directives.AccessDirective{}),
 	}
 
 	db, err := clients.NewPostgreSQLClient()

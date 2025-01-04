@@ -28,3 +28,8 @@ type LoginData struct {
 	Username string
 	Password string
 }
+
+type Logout struct {
+	Success bool
+	Message string
+}

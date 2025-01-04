@@ -2,6 +2,7 @@ package authentication
 
 import (
 	error_utils "backend/src/error"
+	"backend/src/graphql/middleware/authentication"
 	"context"
 )
 
@@ -23,6 +24,19 @@ func (r AuthenticationResolver) Login(ctx context.Context, input LoginInput) (Au
 	})
 	if err != nil {
 		return Authentication{}, error_utils.GraphqlError{
+			Message: err.Error(),
+		}
+	}
+
+	return authentication, nil
+}
+
+func (r AuthenticationResolver) Logout(ctx context.Context) (Logout, error) {
+	authContext := authentication.GetAuthorizationContext(ctx)
+
+	authentication, err := r.authenticationService.Logout(authContext.Token)
+	if err != nil {
+		return Logout{}, error_utils.GraphqlError{
 			Message: err.Error(),
 		}
 	}

@@ -30,7 +30,7 @@ func NewAuthenticationService(params NewAuthenticationResolverParams) Authentica
 	}
 }
 
-func (this AuthenticationService) Login(input LoginData) (Authentication, error) {
+func (service AuthenticationService) Login(input LoginData) (Authentication, error) {
 	getAccountStmt := table.Accounts.
 		SELECT(table.Accounts.AllColumns).
 		WHERE(
@@ -39,7 +39,7 @@ func (this AuthenticationService) Login(input LoginData) (Authentication, error)
 		LIMIT(1)
 
 	account := model.Accounts{}
-	err := getAccountStmt.Query(this.Db, &account)
+	err := getAccountStmt.Query(service.Db, &account)
 
 	if err != nil && error_utils.HasNoRow(err) {
 		return Authentication{}, errors.New("username or password is incorrect")
@@ -86,7 +86,7 @@ func (this AuthenticationService) Login(input LoginData) (Authentication, error)
 		Revoke:    false,
 	})
 
-	_, err = insertSessionTokenStmt.Exec(this.Db)
+	_, err = insertSessionTokenStmt.Exec(service.Db)
 	if err != nil {
 		return Authentication{}, error_utils.InternalServerError
 	}
@@ -96,7 +96,7 @@ func (this AuthenticationService) Login(input LoginData) (Authentication, error)
 		SELECT(table.ProjectAccounts.ProjectId).
 		FROM(table.ProjectAccounts).
 		WHERE(table.ProjectAccounts.AccountId.EQ(pg.UUID(account.ID)))
-	err = projectsStmt.Query(this.Db, &projects)
+	err = projectsStmt.Query(service.Db, &projects)
 
 	if err != nil {
 		return Authentication{}, error_utils.InternalServerError
@@ -111,5 +111,39 @@ func (this AuthenticationService) Login(input LoginData) (Authentication, error)
 		RefreshToken: refreshToken,
 		AccountId:    graphql.ID(account.ID.String()),
 		ProjectIds:   &projectIds,
+	}, nil
+}
+
+func (service AuthenticationService) Logout(token string) (Logout, error) {
+	if token == "" {
+		return Logout{
+			Success: false,
+			Message: "Invalid token",
+		}, nil
+	}
+
+	updateSessionTokenStmt := table.SessionToken.
+		UPDATE(table.SessionToken.Revoke).
+		MODEL(model.SessionToken{
+			Revoke: true,
+		}).
+		WHERE(table.SessionToken.Token.EQ(pg.String(token)))
+
+	result, err := updateSessionTokenStmt.Exec(service.Db)
+
+	if err != nil {
+		return Logout{}, err
+	}
+
+	if affected, _ := result.RowsAffected(); affected == 0 {
+		return Logout{
+			Success: false,
+			Message: "Invalid token",
+		}, nil
+	}
+
+	return Logout{
+		Success: true,
+		Message: "Logout success",
 	}, nil
 }

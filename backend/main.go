@@ -5,6 +5,7 @@ import (
 	"backend/src/config"
 	"backend/src/graphql"
 	graphql_directives "backend/src/graphql/directives"
+	"backend/src/graphql/middleware/authentication"
 	uploadmiddleware "backend/src/graphql/middleware/upload"
 	"backend/src/graphql/subscription/graphqlws"
 	"context"
@@ -103,8 +104,7 @@ func main() {
 	graphQLHandler := corsMiddleware.Handler(
 		graphqlws.NewHandlerFunc(
 			schema,
-			// auth.GraphqlContext(uploadmiddleware.Handler(&relay.Handler{Schema: schema})),
-			uploadmiddleware.Handler(&relay.Handler{Schema: schema}),
+			authentication.GraphqlContext(uploadmiddleware.Handler(&relay.Handler{Schema: schema})),
 		),
 	)
 

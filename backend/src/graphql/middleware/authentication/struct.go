@@ -24,7 +24,7 @@ type AuthorizationPermissionParams struct {
 }
 
 type AuthorizationWithPermissions struct {
-	AccountId   uuid.UUID                       `json:"accountId"`
-	ProjectId   uuid.UUID                       `json:"projectId"`
-	Permissions []AuthorizationPermissionParams `json:"permissions"`
+	AccountId   uuid.UUID
+	ProjectId   uuid.UUID
+	Permissions []AuthorizationPermissionParams
 }

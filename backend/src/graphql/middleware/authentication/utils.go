@@ -5,17 +5,17 @@ import (
 	"backend/src/.gen/cdr-intelligence/public/table"
 	"backend/src/clients"
 	error_utils "backend/src/error"
-	"backend/src/jwt"
 	"context"
 	"database/sql"
 	"encoding/json"
-	"log"
+
 	"strings"
 	"time"
 
 	pg "github.com/go-jet/jet/v2/postgres"
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
+	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
 )
 
@@ -47,8 +47,7 @@ func VerifyAuthorization(ctx context.Context, headers AuthorizationContext, perm
 		}
 	}
 
-	payload, _ := jwt.VerifyToken(headers.Token)
-	key := "accountId:" + payload.AccountId.String() + "," + "projectId:" + headers.ProjectId
+	key := "accountId:" + headers.AccountId + "," + "projectId:" + headers.ProjectId
 
 	// Check if the authorization data is present in the cache
 	redis, err := clients.NewRedisClient()
@@ -79,9 +78,9 @@ func VerifyAuthorization(ctx context.Context, headers AuthorizationContext, perm
 		return err
 	}
 
-	projectAccount, err := getProjectAccount(db, payload.AccountId, projectId)
+	projectAccount, err := getProjectAccount(db, uuid.MustParse(headers.AccountId), projectId)
 	if err != nil {
-		log.Println("get-project-account-error", err.Error())
+		log.Printf("get-project-account-error: %v", err.Error())
 
 		return error_utils.GraphqlError{
 			Message: error_utils.ForbiddenOperation.Error(),
@@ -90,7 +89,7 @@ func VerifyAuthorization(ctx context.Context, headers AuthorizationContext, perm
 
 	accountPermissions, err := getAccountPermissions(db, projectAccount.ProjectRoleId)
 	if err != nil {
-		log.Println("get-account-permission-error", err.Error())
+		log.Printf("get-account-permission-error: %v", err.Error())
 		return error_utils.GraphqlError{
 			Message: error_utils.InternalServerError.Error(),
 		}
@@ -106,7 +105,7 @@ func VerifyAuthorization(ctx context.Context, headers AuthorizationContext, perm
 	cacheAuthorization(cacheAuthorizationParams{
 		ctx:                ctx,
 		key:                key,
-		accountID:          payload.AccountId,
+		accountID:          uuid.MustParse(headers.AccountId),
 		projectID:          projectId,
 		accountPermissions: accountPermissions,
 		redis:              *redis,
@@ -119,7 +118,7 @@ func handleCachedAuthorization(result string, permissionData AuthorizationPermis
 	var data AuthorizationWithPermissions
 
 	if err := json.Unmarshal([]byte(result), &data); err != nil {
-		log.Println("Cache-error", err.Error())
+		log.Printf("cache-authorization-error: %v", err.Error())
 		return error_utils.GraphqlError{
 			Message: err.Error(),
 		}
@@ -214,12 +213,12 @@ func cacheAuthorization(params cacheAuthorizationParams) {
 
 	jsonData, err := json.Marshal(data)
 	if err != nil {
-		log.Println("Json-error", err.Error())
+		log.Printf("cache-authorization-json-error: %v", err.Error())
 		return
 	}
 
 	err = params.redis.Set(params.ctx, params.key, jsonData, 15*time.Minute).Err()
 	if err != nil {
-		log.Println("Cache-error", err.Error())
+		log.Printf("cache-authorization-error: %v", err.Error())
 	}
 }

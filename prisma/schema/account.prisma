@@ -17,7 +17,9 @@ model SessionToken {
     account        Account   @relation(fields: [accountId], references: [id])
     accountId      String    @db.Uuid
     revoke         Boolean   @default(false)
-    isRefreshToken Boolean   @default(false)
+    expirationTime DateTime  @db.Timestamptz()
     createdAt      DateTime  @default(now()) @db.Timestamptz()
     updatedAt      DateTime?
+
+    @@map("session_token")
 }

@@ -76,6 +76,21 @@ func (this AuthenticationService) Login(input LoginData) (Authentication, error)
 		return Authentication{}, error_utils.SignTokenFailed
 	}
 
+	insertSessionTokenStmt := table.SessionToken.INSERT(
+		table.SessionToken.Token,
+		table.SessionToken.AccountId,
+		table.SessionToken.Revoke,
+	).MODEL(model.SessionToken{
+		Token:     token,
+		AccountId: account.ID,
+		Revoke:    false,
+	})
+
+	_, err = insertSessionTokenStmt.Exec(this.Db)
+	if err != nil {
+		return Authentication{}, error_utils.InternalServerError
+	}
+
 	projects := []model.Projects{}
 	projectsStmt := table.ProjectAccounts.
 		SELECT(table.ProjectAccounts.ProjectId).

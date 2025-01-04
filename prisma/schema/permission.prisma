@@ -20,7 +20,7 @@ model Permission {
     name                  String                  @unique
     description           String?
     subject               String
-    action                PermissionAbility
+    ability               PermissionAbility
     createdAt             DateTime                @default(now())
     updatedAt             DateTime                @updatedAt
     ProjectRolePermission ProjectRolePermission[]

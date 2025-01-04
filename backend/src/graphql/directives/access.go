@@ -11,7 +11,7 @@ import (
 type AccessDirective struct {
 	RequiredProjectId *bool
 	Subject           *string
-	Action            *graphql_enum.PermissionAbility
+	Ability           *graphql_enum.PermissionAbility
 }
 
 func (h *AccessDirective) ImplementsDirective() string {
@@ -33,12 +33,12 @@ func (h *AccessDirective) Validate(ctx context.Context, _ interface{}) error {
 		}
 	}
 
-	requiredPermission := h.Action != nil && h.Subject != nil
+	requiredPermission := h.Ability != nil && h.Subject != nil
 
 	if requiredPermission {
 		err := authentication.VerifyAuthorization(ctx, authorization, authentication.AuthorizationPermissionParams{
 			PermissionSubject: *h.Subject,
-			PermissionAbility: model.PermissionAbility(h.Action.String()),
+			PermissionAbility: model.PermissionAbility(h.Ability.String()),
 		})
 
 		return err

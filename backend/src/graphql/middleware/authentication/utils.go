@@ -171,7 +171,7 @@ func getAccountPermissions(dbClient *sql.DB, roleID uuid.UUID) ([]struct{ model.
 	var accountPermissions []struct{ model.Permission }
 
 	selectProjectAccountPermissionsStmt := pg.
-		SELECT(table.Permission.Action, table.Permission.Subject, table.Permission.ID).
+		SELECT(table.Permission.Ability, table.Permission.Subject, table.Permission.ID).
 		FROM(
 			table.ProjectRolePermission.
 				INNER_JOIN(table.Permission, table.Permission.ID.EQ(table.ProjectRolePermission.PermissionId)),
@@ -184,7 +184,7 @@ func getAccountPermissions(dbClient *sql.DB, roleID uuid.UUID) ([]struct{ model.
 
 func hasPermission(accountPermissions []struct{ model.Permission }, permissionData AuthorizationPermissionParams) bool {
 	match := lo.ContainsBy(accountPermissions, func(el struct{ model.Permission }) bool {
-		return el.Action == permissionData.PermissionAbility && el.Subject == permissionData.PermissionSubject
+		return el.Ability == permissionData.PermissionAbility && el.Subject == permissionData.PermissionSubject
 	})
 
 	return match
@@ -206,7 +206,7 @@ func cacheAuthorization(params cacheAuthorizationParams) {
 		Permissions: lo.Map(params.accountPermissions, func(item struct{ model.Permission }, index int) AuthorizationPermissionParams {
 			return AuthorizationPermissionParams{
 				PermissionSubject: item.Subject,
-				PermissionAbility: item.Action,
+				PermissionAbility: item.Ability,
 			}
 		}),
 	}

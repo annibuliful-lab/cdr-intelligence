@@ -6,16 +6,8 @@ schema {
   mutation: Mutation
 }
 
-enum PermissionAbility {
-  CREATE
-  UPDATE
-  DELETE
-  READ
-  EXECUTE
-}
-
 directive @access(
   requiredProjectId: Boolean
   subject: String
-  action: PermissionAbility
+  ability: PermissionAbility
 ) on FIELD_DEFINITION

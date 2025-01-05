@@ -1,0 +1,6 @@
+type Project {
+  id: ID!
+  title: String!
+  createdAt: Time!
+  updatedAt: Time!
+}

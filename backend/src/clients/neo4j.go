@@ -1,14 +1,14 @@
 package clients
 
 import (
-	"cdr-intelligence-backend/src/config"
+	"backend/src/config"
 	"sync"
 
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 var (
-	neo4jDriver neo4j.DriverWithContext
+	neo4jDriver neo4j.DriverWithContext // Now a pointer to an interface
 	neo4jOnce   sync.Once
 )
 
@@ -16,7 +16,7 @@ var (
 func NewNeo4jClient() (neo4j.DriverWithContext, error) {
 	var err error
 	neo4jOnce.Do(func() {
-		neo4jDriver, err = neo4j.NewDriverWithContext(
+		driver, err := neo4j.NewDriverWithContext(
 			config.GetEnv("NEO4J_URI", "bolt://localhost:7687"),
 			neo4j.BasicAuth(
 				config.GetEnv("NEO4J_USERNAME", "neo4j"),
@@ -24,6 +24,9 @@ func NewNeo4jClient() (neo4j.DriverWithContext, error) {
 				"",
 			),
 		)
+		if err == nil {
+			neo4jDriver = driver // Store the address of the driver
+		}
 	})
 
 	if err != nil {

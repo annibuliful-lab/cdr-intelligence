@@ -1,20 +1,27 @@
 package main
 
 import (
-	"cdr-intelligence-backend/src/config"
-	uploadmiddleware "cdr-intelligence-backend/src/graphql/middleware/upload"
+	"backend/src/clients"
+	"backend/src/config"
+	"backend/src/graphql"
+	graphql_directives "backend/src/graphql/directives"
+	"backend/src/graphql/middleware/authentication"
+	uploadmiddleware "backend/src/graphql/middleware/upload"
+	"backend/src/graphql/subscription/graphqlws"
 	"context"
 	"flag"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
 
-	"github.com/graph-gophers/graphql-go"
-	"github.com/graph-gophers/graphql-go/relay"
+	gql "github.com/graph-gophers/graphql-go"
+	relay "github.com/graph-gophers/graphql-go/relay"
 	"github.com/joho/godotenv"
 	gqlMerge "github.com/mununki/gqlmerge/lib"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/rs/cors"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 func mergeGql() {
@@ -28,60 +35,84 @@ func mergeGql() {
 func main() {
 	err := godotenv.Load("../.env")
 	if err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
+		log.Panic().Msg("Error loading .env" + err.Error())
 	}
+
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 
 	mergeGql()
 
 	mergedSchema, err := os.ReadFile("generated.graphql")
 
 	if err != nil {
-		log.Fatal("Error loading graphql file")
+		log.Panic().Msg("Error loading graphql file")
 	}
+
+	isDevelopment := config.GetEnv("ENV", "development") == "development"
 
 	corsMiddleware := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
 		AllowedMethods:   []string{"GET", "POST"},
 		AllowCredentials: true,
 		AllowedHeaders:   []string{"*"},
-		// Debug:            true,
+		// Debug:            isDevelopment,
 	})
 
-	opts := []graphql.SchemaOpt{
-		graphql.UseFieldResolvers(),
-		graphql.MaxParallelism(20),
-		graphql.UseStringDescriptions(),
-		graphql.RestrictIntrospection(func(context.Context) bool {
-			return false
+	opts := []gql.SchemaOpt{
+		gql.UseFieldResolvers(),
+		gql.MaxParallelism(20),
+		gql.UseStringDescriptions(),
+		gql.RestrictIntrospection(func(context.Context) bool {
+			return isDevelopment
 		}),
-		graphql.Directives(),
+		gql.Directives(&graphql_directives.AccessDirective{}),
 	}
 
-	type query struct{}
-
-	// init graphQL schema
-	schema, err := graphql.ParseSchema(string(mergedSchema[:]), &query{}, opts...)
+	db, err := clients.NewPostgreSQLClient()
 	if err != nil {
-		panic(err)
+		log.Panic().Msg(err.Error())
+	}
+	redis, err := clients.NewRedisClient()
+	if err != nil {
+		log.Panic().Msg(err.Error())
+	}
+
+	rabbitmq, err := clients.NewRabbitMQClient()
+	if err != nil {
+		log.Panic().Msg(err.Error())
+	}
+	ctx := context.Background()
+	neo4jDriver, err := clients.NewNeo4jClient()
+	neo4jSession := neo4jDriver.NewSession(ctx, neo4j.SessionConfig{})
+	if err != nil {
+		log.Panic().Msg(err.Error())
+	}
+
+	schema, err := gql.ParseSchema(string(mergedSchema[:]), graphql.GraphqlResolver(graphql.GraphqlResolverParams{
+		Db:       db,
+		Redis:    redis,
+		Rabbitmq: rabbitmq,
+		Neo4j:    &neo4jSession,
+	}), opts...)
+
+	if err != nil {
+		log.Panic().Msg(err.Error())
 	}
 
 	// graphQL handler
 	graphQLHandler := corsMiddleware.Handler(
-		uploadmiddleware.Handler(&relay.Handler{Schema: schema}),
-		// graphqlws.NewHandlerFunc(
-		// 	schema,
-		// 	// auth.GraphqlContext(uploadmiddleware.Handler(&relay.Handler{Schema: schema})),
-		// 	// graphqlws.WithContextGenerator(
-		// 	// 	graphqlws.ContextGeneratorFunc(auth.WebsocketGraphqlContext),
-		// 	// ),
-		// ),
+		graphqlws.NewHandlerFunc(
+			schema,
+			authentication.GraphqlContext(uploadmiddleware.Handler(&relay.Handler{Schema: schema})),
+		),
 	)
 
 	http.Handle("/graphql", graphQLHandler)
 
 	var listenAddress = flag.String("listen", config.GetEnv("BACKEND_PORT", ":3000"), "Listen address.")
 
-	log.Printf("Listening at http://%s", *listenAddress)
+	log.Info().Msg("Listening at http://" + *listenAddress)
 
 	httpServer := http.Server{
 		Addr: *listenAddress,
@@ -95,14 +126,17 @@ func main() {
 		if err := httpServer.Shutdown(context.Background()); err != nil {
 			log.Printf("HTTP Server Shutdown Error: %v", err)
 		}
-		// db.GetPrimaryClient().Close()
-		// db.GetRedisClient().Close()
+		db.Close()
+		redis.Close()
+		rabbitmq.Close()
+		neo4jSession.Close(ctx)
+		neo4jDriver.Close(ctx)
 
 		close(idleConnectionsClosed)
 	}()
 
 	if err := httpServer.ListenAndServe(); err != http.ErrServerClosed {
-		log.Fatalf("HTTP server ListenAndServe Error: %v", err)
+		log.Fatal().Msg("HTTP server ListenAndServe Error:" + err.Error())
 	}
 
 	<-idleConnectionsClosed

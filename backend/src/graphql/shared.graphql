@@ -3,8 +3,11 @@ scalar Upload
 
 schema {
   query: Query
+  mutation: Mutation
 }
 
-type Query {
-  hello: String
-}
+directive @access(
+  requiredProjectId: Boolean
+  subject: String
+  ability: PermissionAbility
+) on FIELD_DEFINITION

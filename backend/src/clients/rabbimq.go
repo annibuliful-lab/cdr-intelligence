@@ -1,7 +1,7 @@
 package clients
 
 import (
-	"cdr-intelligence-backend/src/config"
+	"backend/src/config"
 	"fmt"
 	"sync"
 
@@ -17,10 +17,12 @@ var (
 func NewRabbitMQClient() (*amqp091.Connection, error) {
 	var err error
 	rabbitMQOnce.Do(func() {
-		// Get RabbitMQ URL from environment variables
-		rabbitMQURL := config.GetEnv("RABBITMQ_URL", "amqp://guest:guest@localhost:5672/")
+		rabbitMQURL := fmt.Sprintf("amqp://%s:%s@%s/",
+			config.GetEnv("RABBITMQ_USER", "cdr-intelligence"),
+			config.GetEnv("RABBITMQ_PASSWORD", "cdr-intelligence"),
+			config.GetEnv("RABBITMQ_HOST", "localhost:5672"),
+		)
 
-		// Connect to RabbitMQ server
 		rabbitMQConn, err = amqp091.Dial(rabbitMQURL)
 	})
 

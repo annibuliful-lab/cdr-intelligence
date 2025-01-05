@@ -11,8 +11,11 @@
     "prisma:studio": "prisma studio",
     "prisma:db-push": "prisma db push",
     "prisma:db-pull": "prisma db pull",
+    "prisma:seed": "ts-node prisma/seed",
     "prisma:reset": "prisma migrate reset",
-    "prisma:format": "prisma migrate format"
+    "prisma:format": "prisma migrate format",
+    "backend:db:generate": "cd tools/db-generate && go run main.go && cd ../../backend && rm -rf ./src/.gen/cdr-intelligence/public/table/table_use_schema.go",
+    "backend:dev": "cd backend && go run main.go"
   },
   "keywords": [],
   "author": "",
@@ -24,6 +27,10 @@
     "typescript": "5.7.2"
   },
   "dependencies": {
-    "@prisma/client": "6.1.0"
+    "@genql/cli": "^6.3.3",
+    "@prisma/client": "6.1.0",
+    "@types/uuid": "^10.0.0",
+    "argon2": "^0.41.1",
+    "uuid": "^11.0.3"
   }
 }

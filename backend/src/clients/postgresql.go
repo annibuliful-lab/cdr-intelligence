@@ -1,7 +1,7 @@
 package clients
 
 import (
-	"cdr-intelligence-backend/src/config"
+	"backend/src/config"
 	"database/sql"
 	"fmt"
 	"sync"
@@ -26,6 +26,7 @@ func NewPostgreSQLClient() (*sql.DB, error) {
 			config.GetEnv("POSTGRES_PASSWORD", "password"),
 			config.GetEnv("POSTGRES_DB", "postgres"),
 		)
+
 		postgresDB, err = sql.Open("postgres", dsn)
 
 		if err == nil {

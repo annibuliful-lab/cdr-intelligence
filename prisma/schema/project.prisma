@@ -1,11 +1,13 @@
 model Project {
-    id          String        @id @db.Uuid
-    title       String
-    ProjectRole ProjectRole[]
-    createdAt   DateTime      @db.Timestamptz()
-    updatedAt   DateTime      @db.Timestamptz()
-    createdBy   String
-    updatedBy   String?
+    id             String           @id @db.Uuid
+    title          String
+    description    String?
+    roles          ProjectRole[]
+    createdAt      DateTime         @default(now()) @db.Timestamptz()
+    updatedAt      DateTime?        @db.Timestamptz()
+    createdBy      String
+    updatedBy      String?
+    ProjectAccount ProjectAccount[]
 
     @@map("projects")
 }
@@ -16,8 +18,8 @@ model ProjectRole {
     projectId             String                  @db.Uuid
     title                 String                  @db.VarChar(32)
     ProjectAccount        ProjectAccount[]
-    createdAt             DateTime                @db.Timestamptz()
-    updatedAt             DateTime                @db.Timestamptz()
+    createdAt             DateTime                @default(now()) @db.Timestamptz()
+    updatedAt             DateTime?               @db.Timestamptz()
     createdBy             String
     updatedBy             String?
     ProjectRolePermission ProjectRolePermission[]
@@ -31,8 +33,8 @@ model ProjectRolePermission {
     permission    Permission  @relation(fields: [permissionId], references: [id])
     permissionId  String      @db.Uuid
     projectRoleId String      @db.Uuid
-    createdAt     DateTime    @db.Timestamptz()
-    updatedAt     DateTime    @db.Timestamptz()
+    createdAt     DateTime    @default(now()) @db.Timestamptz()
+    updatedAt     DateTime?   @db.Timestamptz()
     createdBy     String
     updatedBy     String?
 
@@ -42,14 +44,16 @@ model ProjectRolePermission {
 
 model ProjectAccount {
     id            String      @id @db.Uuid
+    project       Project     @relation(fields: [projectId], references: [id])
     projectRole   ProjectRole @relation(fields: [projectRoleId], references: [id])
     account       Account     @relation(fields: [accountId], references: [id])
     projectRoleId String      @db.Uuid
     accountId     String      @db.Uuid
-    createdAt     DateTime    @db.Timestamptz()
-    updatedAt     DateTime    @db.Timestamptz()
+    createdAt     DateTime    @default(now()) @db.Timestamptz()
+    updatedAt     DateTime?   @db.Timestamptz()
     createdBy     String
     updatedBy     String?
+    projectId     String      @db.Uuid
 
     @@unique([accountId, projectRoleId])
     @@map("project_accounts")

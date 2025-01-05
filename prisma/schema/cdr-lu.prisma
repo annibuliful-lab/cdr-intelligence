@@ -35,6 +35,8 @@ model BatchingDataFieldConfiguration {
     sourceField     String
     targetType      String
     targetField     String
+
+    @@map("batching_data_field_configuration")
 }
 
 model CallDetailRecord {

@@ -3,8 +3,8 @@ model Project {
     title          String
     description    String?
     roles          ProjectRole[]
-    createdAt      DateTime         @db.Timestamptz()
-    updatedAt      DateTime         @db.Timestamptz()
+    createdAt      DateTime         @default(now()) @db.Timestamptz()
+    updatedAt      DateTime?        @db.Timestamptz()
     createdBy      String
     updatedBy      String?
     ProjectAccount ProjectAccount[]
@@ -18,8 +18,8 @@ model ProjectRole {
     projectId             String                  @db.Uuid
     title                 String                  @db.VarChar(32)
     ProjectAccount        ProjectAccount[]
-    createdAt             DateTime                @db.Timestamptz()
-    updatedAt             DateTime                @db.Timestamptz()
+    createdAt             DateTime                @default(now()) @db.Timestamptz()
+    updatedAt             DateTime?               @db.Timestamptz()
     createdBy             String
     updatedBy             String?
     ProjectRolePermission ProjectRolePermission[]
@@ -33,8 +33,8 @@ model ProjectRolePermission {
     permission    Permission  @relation(fields: [permissionId], references: [id])
     permissionId  String      @db.Uuid
     projectRoleId String      @db.Uuid
-    createdAt     DateTime    @db.Timestamptz()
-    updatedAt     DateTime    @db.Timestamptz()
+    createdAt     DateTime    @default(now()) @db.Timestamptz()
+    updatedAt     DateTime?   @db.Timestamptz()
     createdBy     String
     updatedBy     String?
 
@@ -49,8 +49,8 @@ model ProjectAccount {
     account       Account     @relation(fields: [accountId], references: [id])
     projectRoleId String      @db.Uuid
     accountId     String      @db.Uuid
-    createdAt     DateTime    @db.Timestamptz()
-    updatedAt     DateTime    @db.Timestamptz()
+    createdAt     DateTime    @default(now()) @db.Timestamptz()
+    updatedAt     DateTime?   @db.Timestamptz()
     createdBy     String
     updatedBy     String?
     projectId     String      @db.Uuid

@@ -16,6 +16,7 @@ type Account struct {
 	Id        graphql.ID
 	Username  string
 	CreatedAt graphql.Time
+	ProjectId *graphql.ID
 }
 
 type RegisterInput struct {
@@ -26,4 +27,8 @@ type RegisterInput struct {
 type CreateAccountData struct {
 	Username string
 	Password string
+}
+
+type ProfileInput struct {
+	ProjectId string
 }

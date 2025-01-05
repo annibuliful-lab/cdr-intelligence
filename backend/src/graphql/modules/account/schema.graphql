@@ -2,10 +2,12 @@ type Account {
   id: ID!
   username: String!
   createdAt: Time!
+  projectId: ID
+  permissions: [Permission!]!
 }
 
 type Query {
-  profile: Account!
+  profile(projectId: ID!): Account! @access
 }
 
 type Mutation {

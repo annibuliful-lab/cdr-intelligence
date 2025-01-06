@@ -5,6 +5,7 @@ import (
 	"backend/src/graphql/modules/account"
 	"backend/src/graphql/modules/authentication"
 	"backend/src/graphql/modules/project"
+	projectrole "backend/src/graphql/modules/project-role"
 )
 
 type Resolver struct {
@@ -12,6 +13,7 @@ type Resolver struct {
 	account.AccountResolver
 	authentication.AuthenticationResolver
 	project.ProjectResolver
+	projectrole.ProjectRoleResolver
 }
 
 func GraphqlResolver(params GraphqlResolverParams) *Resolver {
